@@ -34,28 +34,77 @@ void printExecTime_LengthStruct( Point& a,  Point& b, double (*func)(Point&, Poi
 void printExecTime_Triangle(double a, double b, double c, bool (*func)(double, double, double));
 void printExecTime_TriangleStruct(Triangle& t, bool (*func)(Triangle&));
 
+void lengthComparison(double x1, double y1, double x2, double y2);
+void lengthComparison_Struct(Point& a, Point& b);
+void isTriangleComparison(double a, double b, double c);
+void isTriangleComparison_Struct(Triangle& t);
+
 int main() {
-	Point a = {1.0,1.0};
-	Point b = { 2.0,2.0 };
-	Triangle t = { {0.0, 0.0}, {3.0,0.0}, {0.0,5.0} };
+	double coordinates[6];
+	Point points[3];
+
+	for (short i = 0; i < sizeof(coordinates) / sizeof(coordinates[0]); i++) {
+		cout << (char)('X' + i % 2) << " of point " << (char)('A' + i / 2) << ": ";
+		double tmp;
+		string wrongInput;
+		while (scanf_s("%lf", &tmp) == 0) {
+			char clear;
+			while ((clear = fgetc(stdin)) != '\n' && clear != EOF) {
+				wrongInput += clear;
+			}
+			cout << "ERROR: '"<< wrongInput << "' is not a proper coordinate. Please put in a correct floating point number" << endl;
+			cout << (char)('X' + i % 2) << " of point " << (char)('A' + i / 2) << ": ";
+		}
+		coordinates[i] = tmp;
+	}
+	for (short i = 0; i < sizeof(coordinates) / sizeof(coordinates[0]); i+=2) {
+		cout << "Point " << (char)('A' + i / 2) << "(" << coordinates[i] << "," << coordinates[i + 1] << ")" << endl;
+		points[i / 2] = { coordinates[i], coordinates[i + 1] };
+	}
+	Triangle t = { points[0], points[1], points[2] };
+	double lengths[3] = { getStructLength(points[0], points[1]), getStructLength(points[0], points[2]), getStructLength(points[1], points[2])};
 
 	cout << "+++ Calculating length between 2 points +++" << endl;
-	cout << endl << "C++:" << endl;
-	printExecTime_Length(1.0, 1.0, 2.0, 2.0, getLength);
-	cout << endl << "ASM:" << endl;
-	printExecTime_Length(1.0, 1.0, 2.0, 2.0, getLengthASM);
-	cout << endl << "C++ struct:" << endl;
-	printExecTime_LengthStruct(a, b, getStructLength);
-	cout << endl <<  "ASM struct:" << endl;
-	printExecTime_LengthStruct(a, b, getStructLengthASM);
+	cout << endl << "Between A and B:" << endl;
+	lengthComparison(coordinates[0], coordinates[1], coordinates[2], coordinates[3]);
+	lengthComparison_Struct(points[0], points[1]);
+	cout << endl << "Between A and C:" << endl;
+	lengthComparison(coordinates[0], coordinates[1], coordinates[4], coordinates[5]);
+	lengthComparison_Struct(points[0], points[2]);
+	cout << endl << "Between B and C:" << endl;
+	lengthComparison(coordinates[2], coordinates[3], coordinates[4], coordinates[5]);
+	lengthComparison_Struct(points[1], points[2]);
 	cout << endl << "+++ Checking if 3 side lengths are a triangle +++" << endl;
-	cout << endl << "C++:" << endl;
-	printExecTime_Triangle(3.0, 4.0, 5.0, isTriangle);
-	cout << endl << "ASM:" << endl;
-	printExecTime_Triangle(3.0, 4.0, 5.0, isTriangleASM);
-	cout << endl << "C++ struct:" << endl;
+	isTriangleComparison(lengths[0], lengths[1], lengths[2]);
+	isTriangleComparison_Struct(t);
+}
+
+
+void lengthComparison(double x1, double y1, double x2, double y2) {
+	cout << "C++:" << endl;
+	printExecTime_Length(x1, y1, x2, y2, getLength);
+	cout << "ASM:" << endl;
+	printExecTime_Length(x1, y1, x2, y2, getLengthASM);
+}
+
+void lengthComparison_Struct(Point& a, Point& b) {
+	cout  << "C++ struct:" << endl;
+	printExecTime_LengthStruct(a, b, getStructLength);
+	cout  <<  "ASM struct:" << endl;
+	printExecTime_LengthStruct(a, b, getStructLengthASM);
+}
+
+void isTriangleComparison(double a, double b, double c) {
+	cout << "C++:" << endl;
+	printExecTime_Triangle(a, b, c, isTriangle);
+	cout  << "ASM:" << endl;
+	printExecTime_Triangle(a, b, c, isTriangleASM);
+}
+
+void isTriangleComparison_Struct(Triangle& t) {
+	cout << "C++ struct:" << endl;
 	printExecTime_TriangleStruct(t, isTriangleStruct);
-	cout << endl << "ASM struct:" << endl;
+	cout << "ASM struct:" << endl;
 	printExecTime_TriangleStruct(t, isTriangleStructASM);
 }
 
